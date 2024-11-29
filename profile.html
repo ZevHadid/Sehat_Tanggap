@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/profile.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <div class="profile-card">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h2>Profile User</h2>
+                <div class="profile-details">
+                    <p>Nama Panjang: <span>{{username}}</span></p>
+                    <p>NIS: <span>{{nis}}</span></p>
+                    <p>Kelas: <span>{{kelas}} tel {{tel}}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.querySelector('.toggle-btn');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

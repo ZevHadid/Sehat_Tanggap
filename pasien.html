@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <link rel="stylesheet" href="../static/css/pasien.css">
+</head>
+<body>
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        {% include 'header.html' %}
+    
+        <!-- Patient List Section -->
+        <div class="content-card">
+            <div class="content-header">
+                <h2>Data Pasien Hari Ini</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddPatientModal()">
+                        <i class="fas fa-plus"></i> Tambah Pasien
+                    </button>
+                </div>
+            </div>
+            
+            <div class="patient-list-container">
+                <table class="patient-list">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>NIS</th>
+                            <th>Kelas</th>
+                            <th>Keluhan</th>
+                            <th>Obat</th>
+                            <th>Penjaga</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pasien-hari-ini"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <br>
+        
+        <div class="content-card" id="belum-ada-pasien" style="text-align: center;">
+            <h1>Belum ada Pasien Hari Ini</h1>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const tbody = document.getElementById('pasien-hari-ini');
+                const trElements = tbody.querySelectorAll('tr');
+
+                if (trElements.length > 0) {
+                    document.getElementById("belum-ada-pasien").style.visibility = "hidden";
+                } else {
+                    document.getElementById("belum-ada-pasien").style.visibility = "visible";
+                }
+            });
+        </script>
+        
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal" id="addPatientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tambah Pasien</h2>
+                <span class="close" onclick="closeAddPatientModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addPatientForm">
+                    <div class="form-group">
+                        <label for="nama">Nama Lengkap:</label>
+                        <input type="text" id="nama" name="nama" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nis">NIS:</label>
+                        <input type="number" id="nis" name="nis" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelas">Kelas:</label>
+                        <select id="kelas" name="kelas" required>
+                            <option value=10>X</option>
+                            <option value=11>XI</option>
+                            <option value=12>XII</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="tel" name="tel" required>
+                            <option value=1>Tel 1</option>
+                            <option value=2>Tel 2</option>
+                            <option value=3>Tel 3</option>
+                            <option value=4>Tel 4</option>
+                            <option value=5>Tel 5</option>
+                            <option value=6>Tel 6</option>
+                            <option value=7>Tel 7</option>
+                            <option value=8>Tel 8</option>
+                            <option value=9>Tel 9</option>
+                            <option value=10>Tel 10</option>
+                            <option value=11>Tel 11</option>
+                            <option value=12>Tel 12</option>
+                            <option value=13>Tel 13</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="obat">Obat yang Dipakai:</label>
+                        <select id="obat" name="obat" onchange="toggleQuantity()">
+                            <option value="">-Tidak Ada-</option>
+                            <option value="Paracetamol">Paracetamol</option>
+                            <option value="Antacid">Antacid</option>
+                            <option value="Band-Aid">Band-Aid</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="quantity-group">
+                        <label id="quantity-label" for="quantity">Jumlah Yang Diambil:</label>
+                        <input type="number" id="quantity" name="jumlah" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="keluhan">Keterangan:</label>
+                        <textarea id="keluhan" name="keluhan" class="form-control no-resize" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button id="submit-btn" type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeAddPatientModal()">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/pasien.js"></script>
+    <script>
+        let nisPasien = {{ nis | tojson }};
+        let namaPasien = {{ nama | tojson }};
+        let kelasPasien = {{ kelas | tojson }};
+        let telPasien = {{ tel | tojson }};
+        let keluhanPasien = {{ keluhan | tojson }};
+        let obatPasien = {{ obat | tojson }};
+        let penjagaPasien = {{ penjaga | tojson }};
+
+        for (let i = 0; i < nisPasien.length; i++) {
+            const tr = document.createElement('tr');
+            const td1 = document.createElement('td');
+            td1.textContent = namaPasien[i];
+            tr.appendChild(td1);
+            const td2 = document.createElement('td');
+            td2.textContent = nisPasien[i];
+            tr.appendChild(td2);
+            const td3 = document.createElement('td');
+            td3.textContent = kelasPasien[i] + " tel " + telPasien[i];
+            tr.appendChild(td3);
+            const td4 = document.createElement('td');
+            td4.textContent = keluhanPasien[i];
+            tr.appendChild(td4);
+            const td5 = document.createElement('td');
+            td5.textContent = obatPasien[i];
+            tr.appendChild(td5);
+            const td6 = document.createElement('td');
+            td6.textContent = penjagaPasien[i];
+            tr.appendChild(td6);
+            const tbody = document.getElementById('pasien-hari-ini');
+            tbody.appendChild(tr);
+        }
+
+        function toggleQuantity() {
+            const obat = document.getElementById("obat").value;
+            const quantityGroup = document.getElementById("quantity-group");
+            
+            if (obat === "") {
+                quantityGroup.style.display = "none";
+            } else {
+                quantityGroup.style.display = "block";
+            }
+        }
+
+        toggleQuantity();
+
+        document.getElementById('submit-btn').addEventListener('click', async (event) => {
+            const form = document.getElementById("addPatientForm");
+            const formData = new FormData(form);
+
+            if (!document.getElementById("keluhan").value) return
+
+            const jsonObject = {};
+            formData.forEach((value, key) => {
+                jsonObject[key] = value;
+            });
+            
+
+            try {
+                if (jsonObject["obat"] == "") {
+                    jsonObject["obat"] = "[tidak ada]";
+                }
+
+                if (!jsonObject["jumlah"]) {
+                    jsonObject["jumlah"] = 0;
+                }
+
+                const response = await fetch("/add-patient", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(jsonObject),
+                });
+
+                if (response.ok) {
+                    location.reload();
+
+                    let data = await response.json();
+                    let result = data.input_patient_res;
+                    result = result.replace(/"/g, '');
+                    result = result.replace(/\\n/g, '\n');
+                    alert(result);
+                    closeAddPatientModal()
+                } else {
+                    alert("Siswa dengan data tersebut tidak tertemu.");
+                }
+            } catch (error) {
+                alert('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

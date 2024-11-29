@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Stats Cards -->
+         
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-user-injured"></i>
+                <div class="stat-info">
+                    <h3>{{jumlah_pasien_hari_ini}}</h3>
+                    <p>Pasien Hari Ini</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-pills"></i>
+                <div class="stat-info">
+                    <h3>5</h3>
+                    <p>Obat Menipis</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-nurse"></i>
+                <div class="stat-info">
+                    <h3>2</h3>
+                    <p>Petugas Jaga</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-comments"></i>
+                <div class="stat-info">
+                    <h3>156</h3>
+                    <p>Chat Konsultasi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <div class="content-card">
+                <div class="content-header">
+                    <h2>Pasien Terbaru</h2>
+                    <a href="/pasien" style="color: var(--blue);">Lihat Semua</a>
+                </div>
+                <table class="recent-patients">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Kelas</th>
+                            <th>Keluhan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ahmad Rizky</td>
+                            <td>XI IPA 1</td>
+                            <td>Sakit Kepala</td>
+                            <td><span class="status dalam-perawatan">Dalam Perawatan</span></td>
+                        </tr>
+                        <tr>
+                            <td>Siti Nurhaliza</td>
+                            <td>X IPS 2</td>
+                            <td>Demam</td>
+                            <td><span class="status selesai">Selesai</span></td>
+                        </tr>
+                        <tr>
+                            <td>Budi Santoso</td>
+                            <td>XII IPA 3</td>
+                            <td>Mual</td>
+                            <td><span class="status dalam-perawatan">Dalam Perawatan</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-card">
+                <div class="content-header">
+                    <h2>Stok Obat</h2>
+                    <a href="/medicine" style="color: var(--blue);">Detail</a>
+                </div>
+                <ul class="medicine-list">
+                    <li class="medicine-item">
+                        <div class="medicine-info">
+                            <span class="medicine-name">Paracetamol</span>
+                            <span class="medicine-stock">Stock: 15 strips</span>
+                        </div>
+                        <span class="stock-status low">Low</span>
+                    </li>
+                    <li class="medicine-item">
+                        <div class="medicine-info">
+                            <span class="medicine-name">Antacid</span>
+                            <span class="medicine-stock">Stock: 45 tablets</span>
+                        </div>
+                        <span class="stock-status normal">Normal</span>
+                    </li>
+                    <li class="medicine-item">
+                        <div class="medicine-info">
+                            <span class="medicine-name">Band-Aid</span>
+                            <span class="medicine-stock">Stock: 8 boxes</span>
+                        </div>
+                        <span class="stock-status low">Low</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.querySelector('.toggle-btn');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Add active class to current menu item
+        const menuItems = document.querySelectorAll('.sidebar-menu a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (!this.classList.contains('logout')) {
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
