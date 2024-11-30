@@ -6,15 +6,25 @@ from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from datetime import timedelta, datetime, date
 import mysql.connector
+from mysql.connector import pooling
 import bcrypt
 import ollama
 
-conn = mysql.connector.connect(
-    host='localhost',
-    user='root',
-    password='ZEVhs27*8*',
-    database='manajemen_uks'
+dbconfig = {
+    "host": "localhost",
+    "user": "root",
+    "password": "ZEVhs27*8*",
+    "database": "manajemen_uks"
+}
+
+connection_pool = pooling.MySQLConnectionPool(
+    pool_name="mypool",
+    pool_size=10,
+    **dbconfig
 )
+
+def get_db_connection():
+    return connection_pool.get_connection()
 
 app = FastAPI()
 
@@ -57,12 +67,17 @@ async def dashboard(request: Request, session: dict = Depends(check_session)):
     start_of_day = datetime.combine(today, datetime.min.time())
     end_of_day = start_of_day + timedelta(days=1)
 
+    conn = get_db_connection()
     cursor = conn.cursor()
-    query = "SELECT COUNT(DISTINCT nis) AS unique_count FROM pasien WHERE tanggal >= %s AND tanggal < %s"
-    cursor.execute(query, (start_of_day, end_of_day))
-    jumlah_pasien_hari_ini = cursor.fetchone()[0]
-    cursor.close()
 
+    try:
+        query = "SELECT COUNT(DISTINCT nis) AS unique_count FROM pasien WHERE tanggal >= %s AND tanggal < %s"
+        cursor.execute(query, (start_of_day, end_of_day))
+        jumlah_pasien_hari_ini = cursor.fetchone()[0]
+
+    finally:
+        cursor.close()
+        conn.close()
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -92,6 +107,7 @@ async def medicine(request: Request, session: dict = Depends(check_session)):
 @app.get("/pasien", response_class=HTMLResponse)
 async def pasien(request: Request, session: dict = Depends(check_session)):
     try:
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         today = date.today()
@@ -139,38 +155,82 @@ async def pasien(request: Request, session: dict = Depends(check_session)):
             kelas.append(k)
             tel.append(t)
 
+    finally:
         cursor.close()
+        conn.close()
 
-        return templates.TemplateResponse("pasien.html", {
-            "request": request,
-            "title": "Pasien",
-            "nis": nis,
-            "nama": nama,
-            "kelas": kelas,
-            "tel": tel,
-            "keluhan": keluhan,
-            "obat": obat,
-            "penjaga": penjaga,
-        })
-    
-    except mysql.connector.Error as e:
-        return f"Error: {e.errno} - {e.sqlstate} - {e.msg}"
-    except Exception as e:
-        return f"An unexpected error occurred: {e}"
+    return templates.TemplateResponse("pasien.html", {
+        "request": request,
+        "title": "Pasien",
+        "nis": nis,
+        "nama": nama,
+        "kelas": kelas,
+        "tel": tel,
+        "keluhan": keluhan,
+        "obat": obat,
+        "penjaga": penjaga,
+    })
 
 @app.get("/jadwal-penjaga", response_class=HTMLResponse)
 async def jadwal_penjaga(request: Request, session: dict = Depends(check_session)):
-    return templates.TemplateResponse("jadwal_penjaga.html", {"request": request, "title": "Jadwal Penjaga"})
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Query to select all rows
+        query = "SELECT nis, hari, waktu_mulai, waktu_selesai FROM petugas_pmr"
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        petugas_pmr = []
+        for row in result:
+            row = list(row)
+            row[1] = str(row[1])
+            
+            if isinstance(row[2], timedelta):
+                total_seconds = int(row[2].total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                row[2] = f"{hours:02}:{minutes:02}"
+
+            if isinstance(row[3], timedelta):
+                total_seconds = int(row[3].total_seconds())
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                row[3] = f"{hours:02}:{minutes:02}"
+            
+            query = "SELECT nama FROM siswa WHERE nis = %s"
+            cursor.execute(query, (row[0],))
+            nama = cursor.fetchone()[0]
+
+            row.append(nama)
+            petugas_pmr.append(row)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    # Pass the result to the template
+    return templates.TemplateResponse("jadwal_penjaga.html", {
+        "request": request,
+        "title": "Jadwal Penjaga",
+        "petugas_pmr": petugas_pmr
+    })
 
 @app.get("/profile", response_class=HTMLResponse)
 async def profile(request: Request, session: dict = Depends(check_session)):
 
     nis = session.get("nis")
+    conn = get_db_connection()
     cursor = conn.cursor()
-    query = "SELECT nama, kelas, tel FROM siswa WHERE nis = %s"
-    cursor.execute(query, (nis,))
-    nama, kelas, tel = cursor.fetchone()
-    cursor.close()
+
+    try:
+        query = "SELECT nama, kelas, tel FROM siswa WHERE nis = %s"
+        cursor.execute(query, (nis,))
+        nama, kelas, tel = cursor.fetchone()
+
+    finally:
+        cursor.close()
 
     return templates.TemplateResponse("profile.html", {
         "request": request,
@@ -197,28 +257,31 @@ async def send_prompt(request: Request):
 @app.post("/add-patient")
 async def add_patient(request: Request, session: dict = Depends(check_session)):
     data = await request.json()
-    
-    cursor = conn.cursor()
 
     nis = session.get("nis")
+    conn = get_db_connection()
     cursor = conn.cursor()
-    query = "SELECT nama FROM siswa WHERE nis = %s"
-    cursor.execute(query, (nis,))
-    nama_petugas_pmr = cursor.fetchone()[0]
 
-    query = "SELECT * FROM siswa WHERE nama = %s AND nis = %s AND kelas = %s AND tel = %s"
-    cursor.execute(query, (data["nama"], int(data["nis"]), int(data["kelas"]), int(data["tel"]),))
-    row = cursor.fetchone()
+    try:
+        query = "SELECT nama FROM siswa WHERE nis = %s"
+        cursor.execute(query, (nis,))
+        nama_petugas_pmr = cursor.fetchone()[0]
 
-    if not row:
+        query = "SELECT * FROM siswa WHERE nama = %s AND nis = %s AND kelas = %s AND tel = %s"
+        cursor.execute(query, (data["nama"], int(data["nis"]), int(data["kelas"]), int(data["tel"]),))
+        row = cursor.fetchone()
+
+        if not row:
             input_patient_res = f"Siswa dengan nis [{data['nis']}] tidak tertemu."
             return {"input_patient_res": input_patient_res, "username": nama_petugas_pmr}
 
-    query = "INSERT INTO pasien (nis, nama_obat, jumlah_obat, keluhan, nama_penjaga) VALUES (%s, %s, %s, %s, %s)"
-    cursor.execute(query, (data["nis"], data["obat"], data["jumlah"], data["keluhan"], nama_petugas_pmr))
+        query = "INSERT INTO pasien (nis, nama_obat, jumlah_obat, keluhan, nama_penjaga) VALUES (%s, %s, %s, %s, %s)"
+        cursor.execute(query, (data["nis"], data["obat"], data["jumlah"], data["keluhan"], nama_petugas_pmr))
+        conn.commit()
 
-    conn.commit()
-    cursor.close()
+    finally:
+        cursor.close()
+        conn.close()
 
     input_patient_res = f"""
         Pasien telah masuk database.
@@ -242,19 +305,22 @@ async def login_form(request: Request):
 
 @app.post("/login")
 async def login(request: Request, username_entered: int = Form(...), password_entered: str = Form(...)):
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    query = "SELECT nis, password FROM petugas_pmr WHERE nis = %s"
-    cursor.execute(query, (username_entered,))
+    try:
+        query = "SELECT nis, password FROM petugas_pmr WHERE nis = %s"
+        cursor.execute(query, (username_entered,))
+        result = cursor.fetchone()
 
-    result = cursor.fetchone()
-
-    cursor.close()
+    finally:
+        cursor.close()
+        conn.close()
 
     if result is None:
         return RedirectResponse(url="/login", status_code=303)
 
-    correct_username, correct_password_hash = result
+    correct_password_hash = result[1]
 
     if bcrypt.checkpw(password_entered.encode('utf-8'), correct_password_hash.encode('utf-8')):
         session_data = {
