@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
 
-    <link rel="stylesheet" href="static/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="static/css/Medicine.css">
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <link rel="stylesheet" href="../static/css/Medicine.css">
 </head>
 <body>
 
@@ -168,7 +169,6 @@
     </div>
 
     <script>
-         // Toggle sidebar
          const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
         const toggleBtn = document.querySelector('.toggle-btn');
@@ -178,7 +178,6 @@
             mainContent.classList.toggle('expanded');
         });
 
-        // Modal functions
         const modal = document.getElementById('takeStockModal');
         const medicineNameInput = document.getElementById('medicineName');
 
@@ -191,18 +190,15 @@
             modal.style.display = 'none';
         }
 
-        // Close modal when clicking outside
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 closeModal();
             }
         });
 
-        // Handle form submission
         const takeStockForm = document.getElementById('takeStockForm');
         takeStockForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Add your form submission logic here
             closeModal();
         });
     </script>
