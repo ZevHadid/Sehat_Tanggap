@@ -24,71 +24,92 @@
                 <div class="content-header">
                     <h2>Jadwal Petugas</h2>
                 </div>
-                <div class="schedule-list"></div>
+                <div class="schedule-list" id="list-petugas"></div>
             </div>
 
             <div class="content-card">
                 <div class="content-header">
                     <h2>Jadwal Hari Ini</h2>
                 </div>
-                <div class="schedule-list">
-                    <div class="schedule-item">
-                        <div class="time-slot">07:00 - 10:00</div>
-                        <div class="schedule-detail">
-                            <h3>Muhammad Arsal Nawfal Ali</h3>
-                        </div>
-                        <div class="status active">Bertugas</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">10:00 - 13:00</div>
-                        <div class="schedule-detail">
-                            <h3>Gibran Daffa Atallah</h3>
-                        </div>
-                        <div class="status upcoming">Upcoming</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">13:00 - 16:00</div>
-                        <div class="schedule-detail">
-                            <h3>Rangga Febriansah</h3>
-                        </div>
-                        <div class="status upcoming">Upcoming</div>
-                    </div>
-                </div>
+                <div class="schedule-list" id="petugas-hari-ini"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const scheduleList = document.querySelector('.schedule-list');
-        const petugasPmr = {{ petugas_pmr | tojson }};
+        const jam = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+        const nama_hari = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        let hari = nama_hari[new Date().getDay()];
+
+        const listPetugas = document.getElementById('list-petugas');
+        const petugasHariIni = document.getElementById('petugas-hari-ini');
+        const petugasPmr = JSON.parse('{{ petugas_pmr | tojson | safe }}');
 
         petugasPmr.forEach(petugas => {
             const scheduleItem = document.createElement('div');
             scheduleItem.classList.add('schedule-item');
-            
             const timeSlot = document.createElement('div');
             timeSlot.classList.add('time-slot');
             timeSlot.textContent = petugas[2] + " - " + petugas[3];
-
             const scheduleDetail = document.createElement('div');
             scheduleDetail.classList.add('schedule-detail');
-
             const name = document.createElement('h3');
             name.textContent = petugas[4];
-
             const day = document.createElement('p');
             day.textContent = petugas[1];
-
             scheduleItem.appendChild(timeSlot);
             scheduleItem.appendChild(scheduleDetail);
-            
             scheduleDetail.appendChild(name);
             scheduleDetail.appendChild(day);
-            
-            // Finally, append the schedule-item to the schedule-list
-            scheduleList.appendChild(scheduleItem);
-        });
+            listPetugas.appendChild(scheduleItem);
 
+            if (petugas[1] == hari) {
+                const scheduleItem = document.createElement('div');
+                scheduleItem.className = 'schedule-item';
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                timeSlot.textContent = petugas[2] + " - " + petugas[3];
+                const scheduleDetail = document.createElement('div');
+                scheduleDetail.className = 'schedule-detail';
+                const name = document.createElement('h3');
+                name.textContent = petugas[4];
+                scheduleDetail.appendChild(name);
+                const status = document.createElement('div');
+
+                if (jam >= petugas[2] && jam < petugas[3]) {
+                    status.className = 'status active';
+                    status.textContent = 'Aktif';
+                } else {
+                    status.className = 'status upcoming';
+                    status.textContent = 'Tidak Aktif';
+                }
+                
+                scheduleItem.appendChild(timeSlot);
+                scheduleItem.appendChild(scheduleDetail);
+                scheduleItem.appendChild(status);
+                petugasHariIni.appendChild(scheduleItem);
+            }
+        });
+        
+        if (petugasHariIni.children.length === 0) {
+            const scheduleItem = document.createElement('div');
+            scheduleItem.className = 'schedule-item';
+            const h2 = document.createElement('h3');
+            h2.textContent = "Belum Ada Jadwal Untuk Petugas Hari Ini 🥳 🎉";
+            scheduleItem.appendChild(h2)
+            petugasHariIni.appendChild(scheduleItem);
+        }
+
+    </script>
+    <script>
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.querySelector('.toggle-btn');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
     </script>
 </body>
 </html>
