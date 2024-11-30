@@ -24,50 +24,7 @@
                 <div class="content-header">
                     <h2>Jadwal Petugas</h2>
                 </div>
-                <div class="schedule-list">
-                    <div class="schedule-item">
-                        <div class="time-slot">07:00 - 10:00</div>
-                        <div class="schedule-detail">
-                            <h3>Muhammad Arsal Nawfal Ali</h3>
-                            <p>Senin</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">10:00 - 13:00</div>
-                        <div class="schedule-detail">
-                            <h3>Gibran Daffa Atallah</h3>
-                            <p>Senin</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">13:00 - 16:00</div>
-                        <div class="schedule-detail">
-                            <h3>Rangga Febriansah</h3>
-                            <p>Senin</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">07:00 - 10:00</div>
-                        <div class="schedule-detail">
-                            <h3>Zev Hadid Santoso</h3>
-                            <p>Selasa</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">10:00 - 13:00</div>
-                        <div class="schedule-detail">
-                            <h3>Kenzo Ghaisani Mudzakkir</h3>
-                            <p>Selasa</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="time-slot">13:00 - 16:00</div>
-                        <div class="schedule-detail">
-                            <h3>Qaysara Mahya Habib</h3>
-                            <p>Selasa</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="schedule-list"></div>
             </div>
 
             <div class="content-card">
@@ -101,6 +58,37 @@
         </div>
     </div>
 
-    <script src="../static/js/jadwalpenjaga.js"></script>
+    <script>
+        const scheduleList = document.querySelector('.schedule-list');
+        const petugasPmr = {{ petugas_pmr | tojson }};
+
+        petugasPmr.forEach(petugas => {
+            const scheduleItem = document.createElement('div');
+            scheduleItem.classList.add('schedule-item');
+            
+            const timeSlot = document.createElement('div');
+            timeSlot.classList.add('time-slot');
+            timeSlot.textContent = petugas[2] + " - " + petugas[3];
+
+            const scheduleDetail = document.createElement('div');
+            scheduleDetail.classList.add('schedule-detail');
+
+            const name = document.createElement('h3');
+            name.textContent = petugas[4];
+
+            const day = document.createElement('p');
+            day.textContent = petugas[1];
+
+            scheduleItem.appendChild(timeSlot);
+            scheduleItem.appendChild(scheduleDetail);
+            
+            scheduleDetail.appendChild(name);
+            scheduleDetail.appendChild(day);
+            
+            // Finally, append the schedule-item to the schedule-list
+            scheduleList.appendChild(scheduleItem);
+        });
+
+    </script>
 </body>
 </html>
