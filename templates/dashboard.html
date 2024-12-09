@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Stats Cards -->
+         
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-user-injured"></i>
+                <div class="stat-info">
+                    <h3>{{jumlah_pasien_hari_ini}}</h3>
+                    <p>Pasien Hari Ini</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-pills"></i>
+                <div class="stat-info">
+                    <h3>{{jumlah_semua_obat}}</h3>
+                    <p>Total Obat</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-nurse"></i>
+                <div class="stat-info">
+                    <h3>{{jumlah_petugas_hari_ini}}</h3>
+                    <p>Petugas Jaga</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+            <div class="content-card" >
+                <div class="content-header">
+                    <h2>Pasien Terbaru</h2>
+                    <a href="/pasien" style="color: var(--blue);">Lihat Semua</a>
+                </div>
+                <table class="recent-patients">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Kelas</th>
+                            <th>Keluhan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pasien-terbaru"></tbody>
+                </table>
+            </div>
+
+            
+    </div>
+
+    <script>
+        
+        const dataPasienTerbaru = JSON.parse('{{ pasien_terbaru | tojson | safe }}');
+        pasienTerbaru = document.getElementById('pasien-terbaru');
+        
+        dataPasienTerbaru.forEach(dataPasien => {
+            const tr = document.createElement('tr');
+            const td_nama = document.createElement('td');
+            td_nama.textContent = dataPasien[2];
+            tr.appendChild(td_nama);
+            const td_kelas = document.createElement('td');
+            td_kelas.textContent = dataPasien[3] + " Tel " + dataPasien[4];
+            tr.appendChild(td_kelas);
+            const td_keluhan = document.createElement('td');
+            td_keluhan.textContent = dataPasien[1];
+            tr.appendChild(td_keluhan);
+            pasienTerbaru.appendChild(tr);
+        })
+    </script>
+
+    <script>
+        // Toggle sidebar
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.querySelector('.toggle-btn');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

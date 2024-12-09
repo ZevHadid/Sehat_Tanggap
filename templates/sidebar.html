@@ -1,0 +1,72 @@
+<div class="sidebar">
+    <div class="brand">
+        <i class="fa-solid fa-face-smile"></i>
+        <span>UKS Admin</span>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="/dashboard" id="Dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/chatbot" id="Chatbot">
+                <i class="fas fa-robot"></i>
+                <span>Chatbot</span>
+            </a>
+        </li>
+        <li>
+            <a href="/obat" id="Medicine">
+                <i class="fas fa-pills"></i>
+                <span>Manajemen Obat</span>
+            </a>
+        </li>
+        <li>
+            <a href="/pasien" id="Pasien">
+                <i class="fas fa-users"></i>
+                <span>Pasien</span>
+            </a>
+        </li>
+        <li>
+            <a href="/jadwal-penjaga" id="Jadwal Penjaga">
+                <i class="fas fa-user-nurse"></i>
+                <span>Jadwal Penjaga</span>
+            </a>
+        </li>
+        <li>
+            <a href="/profile" id="Profile">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </li>
+        <li style="margin-top: auto;">
+            <a href="#" class="logout" onclick="logout()">
+                <i class="fas fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<script>
+    document.getElementById(JSON.parse('{{ title | tojson | safe }}')).classList.add("active");
+
+    async function logout() {
+        try {
+            const response = await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'  // Send cookies along with the request
+            });
+            if (response.redirected) {
+                window.location.href = response.url;  // Redirect if the server sends a redirect
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    }
+</script>

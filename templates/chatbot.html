@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link rel="stylesheet" href="../static/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/chatbot.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        {% include 'header.html' %}
+
+        <!-- Chat Interface -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i>
+                <h2>Chatbot</h2>
+            </div>
+
+            <div class="chat-messages" id="chat-container"></div>
+
+            <form id="prompt-form">
+                <div class="chat-input">
+                    <input id="user-prompt" type="text" placeholder="Write A Message...">
+                    <button id="send-btn" onclick="sendPrompt()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+
+            <script>
+                let conversationHistory = JSON.parse('{{ conversation_history | tojson | safe }}');
+                const prompt = document.getElementById("user-prompt");
+
+                function sendPrompt() {
+
+                    event.preventDefault();
+
+                    const chatContainer = document.getElementById('chat-container');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message', 'user');
+                    const messageWrapperDiv = document.createElement('div');
+                    messageWrapperDiv.classList.add('message-wrapper');
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('content');
+                    contentDiv.textContent = prompt.value;
+                    messageWrapperDiv.appendChild(contentDiv);
+                    const avatarDiv = document.createElement('div');
+                    avatarDiv.classList.add('avatar');
+                    const avatarIcon = document.createElement('i');
+                    avatarIcon.classList.add('fas', 'fa-user');
+                    avatarDiv.appendChild(avatarIcon);
+                    messageDiv.appendChild(messageWrapperDiv);
+                    messageDiv.appendChild(avatarDiv);
+                    chatContainer.appendChild(messageDiv);
+
+                    document.getElementById("send-btn").disabled = true;
+
+                    conversationHistory.push({
+                        role: 'user',
+                        content: prompt.value
+                    });
+
+                    fetch("/send-prompt", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(conversationHistory),
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        prompt.value = "";
+
+                        conversationHistory.push({
+                            role: 'ai',
+                            content: data
+                        });
+                        
+                        const chatContainer = document.getElementById('chat-container');
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message', 'bot');
+                        const avatarDiv = document.createElement('div');
+                        avatarDiv.classList.add('avatar');
+                        const avatarIcon = document.createElement('i');
+                        avatarIcon.classList.add('fas', 'fa-robot');
+                        avatarDiv.appendChild(avatarIcon);
+                        const messageWrapper = document.createElement('div');
+                        messageWrapper.classList.add('message-wrapper');
+                        const contentDiv = document.createElement('div');
+                        contentDiv.classList.add('content');
+                        contentDiv.textContent = data;
+                        messageWrapper.appendChild(contentDiv);
+                        messageDiv.appendChild(avatarDiv);
+                        messageDiv.appendChild(messageWrapper);
+                        chatContainer.appendChild(messageDiv);
+
+                        document.getElementById("send-btn").disabled = false;
+                    })
+                    .catch(error => console.error("Error:", error));
+                }
+            </script>
+
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const toggleBtn = document.querySelector('.toggle-btn');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Add active class to current menu item
+        const menuItems = document.querySelectorAll('.sidebar-menu a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (!this.classList.contains('logout')) {
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
