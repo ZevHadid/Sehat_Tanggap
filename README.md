@@ -1,2 +1,2 @@
-# TSDN-2024
-TSDN 20204 project (super secretive. I ain't telling till the tournament's over.)
+# Sehat Tanggap
+This project was used in TSDN 2024. It's a school health unit management website. Feel free to use it.
