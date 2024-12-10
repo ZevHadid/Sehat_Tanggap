@@ -4,7 +4,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import HTTPException
 
-
 from starlette.middleware.sessions import SessionMiddleware
 from datetime import timedelta, datetime, date
 from mysql.connector import pooling
@@ -99,7 +98,7 @@ async def dashboard(request: Request, session: dict = Depends(check_session)):
         cursor.execute(query)
         data_pasien = [list(row) for row in cursor.fetchall()]
 
-        cursor.execute("SELECT SUM(jumlah_obat) AS total_jumlah_obat FROM stok_obat")
+        cursor.execute("SELECT SUM(stok_obat) AS total_jumlah_obat FROM obat_uks")
         jumlah_semua_obat = cursor.fetchone()[0]
 
         for i in range(len(data_pasien)):
@@ -177,10 +176,10 @@ async def medicine(request: Request, session: dict = Depends(check_session)):
             'tahun': [x[4] for x in data]
         }
 
-        cursor.execute("SELECT nama_obat FROM stok_obat")
+        cursor.execute("SELECT nama_obat FROM obat_uks")
         nama_obat = [r[0] for r in cursor.fetchall()]
         
-        cursor.execute("SELECT jumlah_obat FROM stok_obat")
+        cursor.execute("SELECT stok_obat FROM obat_uks")
         jumlah_obat = [r[0] for r in cursor.fetchall()]
 
         # Ensure 'nama_obat' and 'jumlah_obat' match up correctly in the current data
@@ -211,7 +210,7 @@ async def medicine(request: Request, session: dict = Depends(check_session)):
             rata_obat_yg_dipakai.append(sublist)
         rata_obat_yg_dipakai = [round(np.mean(group)) for group in rata_obat_yg_dipakai]
 
-        cursor.execute("SELECT jumlah_obat FROM stok_obat")
+        cursor.execute("SELECT stok_obat FROM obat_uks")
         stok_obat2 = [jumlah[0] for jumlah in cursor.fetchall()]
 
     finally:
@@ -238,7 +237,7 @@ async def tambah_obat(request: Request, session: dict = Depends(check_session)):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        query = "UPDATE stok_obat SET jumlah_obat = jumlah_obat + %s WHERE nama_obat = %s"
+        query = "UPDATE obat_uks SET stok_obat = stok_obat + %s WHERE nama_obat = %s"
         cursor.execute(query, (data["jumlahObat"], data["namaObat"]))
         conn.commit()
 
@@ -343,7 +342,7 @@ async def add_patient(request: Request, session: dict = Depends(check_session)):
         cursor.execute(query, (data["nis"], data["obat"], data["jumlah"], data["keluhan"], nama_petugas_pmr))
         conn.commit()
 
-        query = "UPDATE stok_obat SET jumlah_obat = jumlah_obat - %s WHERE nama_obat = %s"
+        query = "UPDATE obat_uks SET stok_obat = stok_obat - %s WHERE nama_obat = %s"
         cursor.execute(query, (data["jumlah"], data["obat"]))
         conn.commit()
 
